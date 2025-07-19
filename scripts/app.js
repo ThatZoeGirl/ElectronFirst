@@ -11,6 +11,10 @@ let playing = false;
 openFileBtn.addEventListener('click', async () => {
     const filePath = await electronAPI.openFile();
     if (filePath){
+        if(playing){
+            await togglePlayback()
+            while(playing) await new Promise((resolve) => setTimeout(resolve, 100));
+        }
         audio.src = filePath;
         audio.load();
         playBtn.disabled = false;
@@ -19,19 +23,17 @@ openFileBtn.addEventListener('click', async () => {
 })
 
 playBtn.addEventListener('click', async () => {
-    if (playing) {
-        audio.pause();
-    } else {
-        audio.play();
-    }
+    togglePlayback();
 })
 
 audio.addEventListener('play', async () => {
+    console.log("called start");
     playing = true;
     playBtn.textContent = 'Pause';
 })
 
 audio.addEventListener('pause', async () => {
+    console.log("called stop");
     playing = false;
     playBtn.textContent = 'Play';
 })
@@ -48,3 +50,17 @@ function formatTime(seconds) {
   const secs = Math.floor(seconds % 60);
   return `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
 }
+
+async function togglePlayback(){
+    console.log('called', playing);
+    if (playing) {
+        audio.pause();
+    } else {
+        audio.play();
+    }
+    return;
+}
+
+(async () =>{
+    setInterval(() => {console.log(playing), 100});
+})();
